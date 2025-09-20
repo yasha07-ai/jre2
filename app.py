@@ -1,5 +1,5 @@
 import streamlit as st
-from src.helper import extract_text_from_pdf, ask_openai
+from src.helper import extract_text_from_pdf, ask_openai, validate_resume
 from src.job_api import fetch_naukri_jobs
 
 st.set_page_config(page_title="Job Recommender", layout="wide")
@@ -11,17 +11,35 @@ uploaded_file = st.file_uploader("Upload your resume (PDF)", type=["pdf"])
 if uploaded_file:
     with st.spinner("Extracting text from your resume..."):
         resume_text = extract_text_from_pdf(uploaded_file)
+    
+    with st.spinner("Validating resume format..."):
+        is_valid_resume = validate_resume(resume_text)
+    
+    if not is_valid_resume:
+        st.error("❌ This doesn't appear to be a valid resume. Please upload a proper resume with sections like experience, skills, education, or contact information.")
+        st.stop()
 
     with st.spinner("Summarizing your resume..."):
-        summary = ask_openai(f"Summarize this resume highlighting the skills, edcucation, and experience: \n\n{resume_text}", max_tokens=500)
+        summary = ask_openai(f"If this is a valid resume, summarize it highlighting the skills, education, and experience. If this is not a resume or lacks proper resume content, respond with 'NOT A VALID RESUME': \n\n{resume_text}", max_tokens=500)
+        
+        if "NOT A VALID RESUME" in summary.upper():
+            st.error("❌ This document does not contain valid resume information.")
+            st.stop()
 
     
     with st.spinner("Finding skill Gaps..."):
-        gaps = ask_openai(f"Analyze this resume and highlight missing skills, certifications, and experiences needed for better job opportunities: \n\n{resume_text}", max_tokens=400)
-
+        gaps = ask_openai(f"If this is a valid resume, analyze it and highlight missing skills, certifications, and experiences needed for better job opportunities. If this is not a resume, respond with 'NOT A VALID RESUME': \n\n{resume_text}", max_tokens=400)
+        
+        if "NOT A VALID RESUME" in gaps.upper():
+            st.error("❌ This document does not contain valid resume information.")
+            st.stop()
 
     with st.spinner("Creating Future Roadmap..."):
-        roadmap = ask_openai(f"Based on this resume, suggest a future roadmap to improve this person's career prospects (Skill to learn, certification needed, industry exposure): \n\n{resume_text}", max_tokens=400)
+        roadmap = ask_openai(f"If this is a valid resume, suggest a future roadmap to improve this person's career prospects (Skills to learn, certifications needed, industry exposure). If this is not a resume, respond with 'NOT A VALID RESUME': \n\n{resume_text}", max_tokens=400)
+        
+        if "NOT A VALID RESUME" in roadmap.upper():
+            st.error("❌ This document does not contain valid resume information.")
+            st.stop()
     
     # Display nicely formatted results
     st.markdown("---")

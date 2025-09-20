@@ -61,3 +61,32 @@ def ask_openai(prompt, max_tokens=500):
     return response.choices[0].message.content
 
 
+def validate_resume(text):
+    """
+    Validates if the extracted text appears to be from a resume.
+    
+    Args:
+        text (str): The extracted text from the PDF.
+        
+    Returns:
+        bool: True if it appears to be a resume, False otherwise.
+    """
+    if not text or len(text.strip()) < 100:
+        return False
+    
+    text_lower = text.lower()
+    
+    # Check for common resume keywords
+    resume_keywords = [
+        'experience', 'education', 'skills', 'work', 'employment',
+        'qualification', 'degree', 'university', 'college', 'job',
+        'position', 'role', 'responsibility', 'achievement', 'project',
+        'email', 'phone', 'contact', 'address', 'linkedin', 'github'
+    ]
+    
+    keyword_count = sum(1 for keyword in resume_keywords if keyword in text_lower)
+    
+    # Must have at least 3 resume-related keywords
+    return keyword_count >= 3
+
+
