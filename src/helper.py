@@ -2,11 +2,16 @@ import fitz # PyMuPDF
 import os 
 from dotenv import load_dotenv
 from groq import Groq
+import streamlit as st
 
 
 load_dotenv()
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+# Try Streamlit secrets first, fallback to environment variables
+try:
+    GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+except:
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 client = Groq(api_key=GROQ_API_KEY)
 

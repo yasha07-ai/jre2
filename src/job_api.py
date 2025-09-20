@@ -1,9 +1,16 @@
 from apify_client import ApifyClient
 import os 
 from dotenv import load_dotenv
+import streamlit as st
 load_dotenv()
 
-apify_client = ApifyClient(os.getenv("APIFY_API_TOKEN"))
+# Try Streamlit secrets first, fallback to environment variables
+try:
+    APIFY_API_TOKEN = st.secrets["APIFY_API_TOKEN"]
+except:
+    APIFY_API_TOKEN = os.getenv("APIFY_API_TOKEN")
+
+apify_client = ApifyClient(APIFY_API_TOKEN)
 
 # Fetch LinkedIn jobs based on search query and location
 def fetch_linkedin_jobs(search_query, location = "india", rows=60):
